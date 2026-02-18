@@ -1,8 +1,8 @@
-"use client";
-
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Eye, Calendar, User, Tag } from "lucide-react";
+import type { Metadata } from "next";
+import blogPosts from "@/data/blog-posts.json";
 
 interface BlogPost {
   id: string;
@@ -20,144 +20,158 @@ interface BlogPost {
   imageUrl?: string;
 }
 
-const defaultPosts: BlogPost[] = [];
+const posts = blogPosts as BlogPost[];
 
-export default function BlogPostPage() {
-  const params = useParams();
-  const slug = params.slug as string;
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
+export async function generateStaticParams() {
+  return posts
+    .filter((p) => p.status === "published")
+    .map((p) => ({ slug: p.slug }));
+}
 
-  useEffect(() => {
-    const stored = localStorage.getItem("blog_posts");
-    if (stored) {
-      try {
-        const posts: BlogPost[] = JSON.parse(stored);
-        const found = posts.find(p => p.slug === slug && p.status === "published");
-        if (found) {
-          setPost(found);
-        }
-      } catch {
-        setPost(null);
-      }
-    }
-    setLoading(false);
-  }, [slug]);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = posts.find((p) => p.slug === slug && p.status === "published");
+  if (!post) return { title: "Post Not Found" };
+  return {
+    title: post.title,
+    description: post.excerpt,
+  };
+}
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-[#0A0a0a] to-[#1a1a2e] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#0A66C2]"></div>
-      </div>
-    );
-  }
+const categoryColors: Record<string, string> = {
+  Career: "bg-blue-100 text-blue-700",
+  "Profile Tips": "bg-purple-100 text-purple-700",
+  "Content Strategy": "bg-orange-100 text-orange-700",
+  Networking: "bg-green-100 text-green-700",
+  Outreach: "bg-pink-100 text-pink-700",
+  Tips: "bg-yellow-100 text-yellow-700",
+  Strategy: "bg-indigo-100 text-indigo-700",
+  Growth: "bg-teal-100 text-teal-700",
+  Communication: "bg-rose-100 text-rose-700",
+};
 
-  if (!post) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-[#0A0a0a] to-[#1a1a2e]">
-        <header className="border-b border-white/10 backdrop-blur-xl bg-black/20">
-          <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#0A66C2] to-[#7c3aed] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">LF</span>
-                </div>
-                <span className="text-white font-semibold text-xl">LinkForge</span>
-              </Link>
-              <div className="flex items-center gap-8">
-                <Link href="/" className="text-gray-300 hover:text-white transition">Home</Link>
-                <Link href="/tools" className="text-gray-300 hover:text-white transition">Tools</Link>
-                <Link href="/blog" className="text-white font-medium">Blog</Link>
-              </div>
-            </div>
-          </nav>
-        </header>
-        <main className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Article Not Found</h1>
-          <p className="text-gray-400 mb-8">The article you're looking for doesn't exist or has been removed.</p>
-          <Link href="/blog" className="text-[#0A66C2] hover:underline">← Back to Blog</Link>
-        </main>
-      </div>
-    );
-  }
+export default async function BlogPostPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const post = posts.find((p) => p.slug === slug && p.status === "published");
+
+  if (!post) notFound();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-[#0A0a0a] to-[#1a1a2e]">
-      <header className="border-b border-white/10 backdrop-blur-xl bg-black/20">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#0A66C2] to-[#7c3aed] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">LF</span>
-              </div>
-              <span className="text-white font-semibold text-xl">LinkForge</span>
-            </Link>
-            <div className="flex items-center gap-8">
-              <Link href="/" className="text-gray-300 hover:text-white transition">Home</Link>
-              <Link href="/tools" className="text-gray-300 hover:text-white transition">Tools</Link>
-              <Link href="/blog" className="text-white font-medium">Blog</Link>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-[#0A66C2] via-[#004182] to-[#7c3aed] text-white py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-blue-200 hover:text-white transition mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Blog
+          </Link>
+          <div className="flex items-center gap-3 mb-4">
+            <span
+              className={`px-3 py-1 text-sm font-medium rounded-full ${
+                categoryColors[post.category] || "bg-white/20 text-white"
+              }`}
+            >
+              {post.category}
+            </span>
           </div>
-        </nav>
-      </header>
+          <h1 className="text-3xl md:text-5xl font-bold mb-6 leading-tight">
+            {post.title}
+          </h1>
+          <p className="text-blue-100 text-lg mb-6">{post.excerpt}</p>
+          <div className="flex flex-wrap items-center gap-4 text-blue-200 text-sm">
+            <span className="flex items-center gap-1">
+              <User className="w-4 h-4" /> {post.author}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" /> {post.createdAt}
+            </span>
+            <span className="flex items-center gap-1">
+              <Eye className="w-4 h-4" /> {post.views.toLocaleString()} views
+            </span>
+          </div>
+        </div>
+      </section>
 
-      <main className="max-w-4xl mx-auto px-4 py-16">
-        <Link href="/blog" className="text-[#0A66C2] hover:underline mb-8 inline-block">← Back to Blog</Link>
-        
+      {/* Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {post.imageUrl && (
-          <img src={post.imageUrl} alt={post.title} className="w-full h-64 object-cover rounded-2xl mb-8" />
+          <img
+            src={post.imageUrl}
+            alt={post.title}
+            className="w-full h-64 object-cover rounded-2xl mb-8 shadow-lg"
+          />
         )}
-        
-        <div className="flex items-center gap-3 mb-4">
-          <span className="px-3 py-1 bg-[#0A66C2]/20 text-[#0A66C2] text-sm rounded-full">{post.category}</span>
-          <span className="text-gray-500 text-sm">{post.createdAt}</span>
-          <span className="text-gray-500 text-sm">•</span>
-          <span className="text-gray-500 text-sm">{post.views} views</span>
-        </div>
-        
-        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">{post.title}</h1>
-        
-        <div className="flex items-center gap-3 mb-8 pb-8 border-b border-white/10">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#0A66C2] to-[#7c3aed] rounded-full flex items-center justify-center">
-            <span className="text-white font-bold">{post.author[0]}</span>
-          </div>
-          <div>
-            <p className="text-white font-medium">{post.author}</p>
-            <p className="text-gray-500 text-sm">Author</p>
-          </div>
-        </div>
 
-        <article className="prose prose-invert max-w-none">
-          <div className="text-gray-300 text-lg leading-relaxed whitespace-pre-wrap">
+        <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+          <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
             {post.content}
           </div>
-        </article>
+        </div>
 
+        {/* Tags */}
         {post.tags && post.tags.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-white/10">
-            <p className="text-gray-400 mb-3">Tags:</p>
-            <div className="flex flex-wrap gap-2">
-              {post.tags.map((tag, i) => (
-                <span key={i} className="px-3 py-1 bg-white/5 text-gray-300 text-sm rounded-full">{tag}</span>
-              ))}
-            </div>
+          <div className="mt-8 flex flex-wrap items-center gap-2">
+            <Tag className="w-4 h-4 text-gray-400" />
+            {post.tags.map((tag, i) => (
+              <span
+                key={i}
+                className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded-full hover:bg-blue-50 hover:text-blue-700 transition"
+              >
+                #{tag}
+              </span>
+            ))}
           </div>
         )}
-      </main>
 
-      <footer className="border-t border-white/10 bg-black/20 py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-[#0A66C2] to-[#7c3aed] rounded flex items-center justify-center">
-                <span className="text-white font-bold text-xs">LF</span>
-              </div>
-              <span className="text-white font-semibold">LinkForge</span>
-            </div>
-            <p className="text-gray-500 text-sm">© 2024 LinkForge. All rights reserved.</p>
+        {/* Related posts */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">More Articles</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {posts
+              .filter((p) => p.status === "published" && p.id !== post.id)
+              .slice(0, 4)
+              .map((related) => (
+                <Link
+                  key={related.id}
+                  href={`/blog/${related.slug}`}
+                  className="bg-white border border-gray-200 rounded-xl p-4 hover:border-[#0A66C2] hover:shadow-md transition-all group"
+                >
+                  <span
+                    className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                      categoryColors[related.category] || "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {related.category}
+                  </span>
+                  <h3 className="font-semibold text-gray-900 mt-2 group-hover:text-[#0A66C2] transition-colors line-clamp-2">
+                    {related.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm mt-1 line-clamp-2">{related.excerpt}</p>
+                </Link>
+              ))}
           </div>
         </div>
-      </footer>
+
+        {/* Back link */}
+        <div className="mt-8 text-center">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0A66C2] to-[#7c3aed] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to All Articles
+          </Link>
+        </div>
+      </main>
     </div>
   );
 }

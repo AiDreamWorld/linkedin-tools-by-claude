@@ -1,8 +1,12 @@
-"use client";
-
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { BookOpen, Eye, ArrowRight, PenSquare } from "lucide-react";
+import type { Metadata } from "next";
+import blogPosts from "@/data/blog-posts.json";
+
+export const metadata: Metadata = {
+  title: "LinkedIn Blog – Tips, Guides & Strategies",
+  description: "Expert LinkedIn tips, career strategies, and profile guides to help you grow professionally and land your dream job.",
+};
 
 interface BlogPost {
   id: string;
@@ -20,93 +24,6 @@ interface BlogPost {
   imageUrl?: string;
 }
 
-const defaultPosts: BlogPost[] = [
-  {
-    id: "1",
-    title: "10 Tips for LinkedIn Success in 2025",
-    excerpt: "Master LinkedIn with these proven strategies to boost your professional presence and get noticed by recruiters.",
-    slug: "10-tips-linkedin-2025",
-    category: "Career",
-    content: "Full article content here...",
-    status: "published",
-    author: "LinkForge Team",
-    tags: ["linkedin", "career"],
-    views: 5423,
-    createdAt: "2025-01-15",
-    updatedAt: "2025-01-15",
-  },
-  {
-    id: "2",
-    title: "How to Write the Perfect LinkedIn Headline",
-    excerpt: "Your headline is your first impression. Learn how to craft a compelling headline that gets you discovered.",
-    slug: "perfect-linkedin-headline",
-    category: "Profile Tips",
-    content: "Full article content here...",
-    status: "published",
-    author: "LinkForge Team",
-    tags: ["headline", "profile"],
-    views: 3212,
-    createdAt: "2025-01-10",
-    updatedAt: "2025-01-12",
-  },
-  {
-    id: "3",
-    title: "Best Times to Post on LinkedIn in 2025",
-    excerpt: "Maximize your reach with optimal posting times. Data-backed strategies for better engagement.",
-    slug: "best-times-to-post",
-    category: "Content Strategy",
-    content: "Full article content here...",
-    status: "published",
-    author: "LinkForge Team",
-    tags: ["timing", "engagement"],
-    views: 2156,
-    createdAt: "2025-01-05",
-    updatedAt: "2025-01-05",
-  },
-  {
-    id: "4",
-    title: "How to Grow Your LinkedIn Network Fast",
-    excerpt: "Proven strategies to grow your LinkedIn network meaningfully without spamming your connections.",
-    slug: "grow-linkedin-network",
-    category: "Networking",
-    content: "Full article content here...",
-    status: "published",
-    author: "LinkForge Team",
-    tags: ["connections", "networking"],
-    views: 1876,
-    createdAt: "2024-12-28",
-    updatedAt: "2024-12-28",
-  },
-  {
-    id: "5",
-    title: "LinkedIn Profile Photo: The Complete Guide",
-    excerpt: "Make a great first impression with the perfect profile picture. Tips on lighting, background, and expression.",
-    slug: "profile-photo-guide",
-    category: "Profile Tips",
-    content: "Full article content here...",
-    status: "published",
-    author: "LinkForge Team",
-    tags: ["photo", "profile"],
-    views: 1543,
-    createdAt: "2024-12-20",
-    updatedAt: "2024-12-20",
-  },
-  {
-    id: "6",
-    title: "Writing LinkedIn Messages That Get Responses",
-    excerpt: "Craft outreach messages that get responses and build genuine professional relationships.",
-    slug: "linkedin-messages-that-work",
-    category: "Outreach",
-    content: "Full article content here...",
-    status: "published",
-    author: "LinkForge Team",
-    tags: ["messages", "outreach"],
-    views: 1234,
-    createdAt: "2024-12-15",
-    updatedAt: "2024-12-15",
-  },
-];
-
 const categoryColors: Record<string, string> = {
   Career: "bg-blue-100 text-blue-700",
   "Profile Tips": "bg-purple-100 text-purple-700",
@@ -120,32 +37,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("blog_posts");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        const publishedPosts = parsed.filter((p: BlogPost) => p.status === "published");
-        setPosts(publishedPosts.length > 0 ? publishedPosts : defaultPosts);
-      } else {
-        setPosts(defaultPosts);
-      }
-    } catch {
-      setPosts(defaultPosts);
-    }
-    setLoading(false);
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#0A66C2]" />
-      </div>
-    );
-  }
+  const posts = (blogPosts as BlogPost[]).filter((p) => p.status === "published");
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -166,10 +58,9 @@ export default function BlogPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {posts.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500 text-lg mb-4">No blog posts yet.</p>
-            <Link href="/settings" className="text-[#0A66C2] hover:underline">
-              Go to Admin to create posts →
-            </Link>
+            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg mb-2">No blog posts yet.</p>
+            <p className="text-gray-400 text-sm">Check back soon for LinkedIn tips and guides.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -180,7 +71,11 @@ export default function BlogPage() {
               >
                 {post.imageUrl ? (
                   <div className="h-48 overflow-hidden">
-                    <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img
+                      src={post.imageUrl}
+                      alt={post.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
                 ) : (
                   <div className="h-40 bg-gradient-to-br from-[#0A66C2]/10 to-[#7c3aed]/10 flex items-center justify-center">
@@ -189,7 +84,11 @@ export default function BlogPage() {
                 )}
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${categoryColors[post.category] || "bg-gray-100 text-gray-600"}`}>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        categoryColors[post.category] || "bg-gray-100 text-gray-600"
+                      }`}
+                    >
                       {post.category}
                     </span>
                     <span className="text-gray-400 text-xs flex items-center gap-1">
@@ -222,7 +121,7 @@ export default function BlogPage() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-3">Want to Write for Us?</h2>
           <p className="text-gray-600 mb-6 max-w-xl mx-auto">
-            Share your LinkedIn expertise with our community. We're always looking for guest contributors.
+            Share your LinkedIn expertise with our community. We&apos;re always looking for guest contributors.
           </p>
           <Link
             href="/contact"
