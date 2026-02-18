@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import { 
   Users, Eye, Clock, TrendingUp, Activity, Globe, 
   ArrowUp, ArrowDown, Settings, LogOut, RefreshCw,
@@ -444,27 +445,24 @@ export default function AdminDashboard() {
     setRevenue(generateRevenueData());
     setContent(generateContentData());
     
-    const storedPosts = localStorage.getItem("blog_posts");
-    if (storedPosts) {
-      try {
-        setBlogPosts(JSON.parse(storedPosts));
-      } catch {
-        setBlogPosts(generateBlogPosts());
-      }
-    } else {
-      setBlogPosts(generateBlogPosts());
-    }
-    
-    const storedFaqs = localStorage.getItem("faqs");
-    if (storedFaqs) {
-      try {
-        setFaqs(JSON.parse(storedFaqs));
-      } catch {
-        setFaqs(generateFaqs());
-      }
-    } else {
-      setFaqs(generateFaqs());
-    }
+    // Load blog posts from Supabase
+    supabase.from("blog_posts").select("*").order("created_at", { ascending: false }).then(({ data }) => {
+      setBlogPosts(data ? data.map(p => ({
+        id: p.id, title: p.title, slug: p.slug, excerpt: p.excerpt || "",
+        content: p.content || "", status: p.status, author: p.author || "Admin",
+        category: p.category || "", tags: p.tags || [], views: p.views || 0,
+        createdAt: p.created_at?.split("T")[0] || "", updatedAt: p.updated_at?.split("T")[0] || "",
+        imageUrl: p.image_url || ""
+      })) : []);
+    });
+
+    // Load FAQs from Supabase
+    supabase.from("faqs").select("*").order("order", { ascending: true }).then(({ data }) => {
+      setFaqs(data ? data.map(f => ({
+        id: f.id, question: f.question, answer: f.answer,
+        category: f.category || "General", order: f.order || 0, status: f.status
+      })) : []);
+    });
     
     const storedPages = localStorage.getItem("static_pages");
     if (storedPages) {
@@ -1791,35 +1789,32 @@ export default function AdminDashboard() {
                         "bg-blue-500/20 text-blue-400"
                       }`}>{post.status}</span>
                       {post.status === "published" ? (
-                        <button 
-                          onClick={() => { 
-                            const updated = blogPosts.map(p => p.id === post.id ? { ...p, status: "draft" as const } : p);
-                            setBlogPosts(updated);
-                            localStorage.setItem("blog_posts", JSON.stringify(updated));
+                        <button
+                          onClick={async () => {
+                            await supabase.from("blog_posts").update({ status: "draft" }).eq("id", post.id);
+                            setBlogPosts(prev => prev.map(p => p.id === post.id ? { ...p, status: "draft" as const } : p));
                           }}
                           className="p-2 hover:bg-white/10 rounded-lg" title="Unpublish"
                         ><FileText className="w-4 h-4 text-yellow-400" /></button>
                       ) : (
-                        <button 
-                          onClick={() => { 
-                            const updated = blogPosts.map(p => p.id === post.id ? { ...p, status: "published" as const } : p);
-                            setBlogPosts(updated);
-                            localStorage.setItem("blog_posts", JSON.stringify(updated));
+                        <button
+                          onClick={async () => {
+                            await supabase.from("blog_posts").update({ status: "published" }).eq("id", post.id);
+                            setBlogPosts(prev => prev.map(p => p.id === post.id ? { ...p, status: "published" as const } : p));
                           }}
                           className="p-2 hover:bg-white/10 rounded-lg" title="Publish"
                         ><CheckCircle className="w-4 h-4 text-green-400" /></button>
                       )}
-                      <button 
+                      <button
                         onClick={() => { setEditingBlogPost(post); setShowBlogModal(true); }}
                         className="p-2 hover:bg-white/10 rounded-lg" title="Edit"
                       ><Edit className="w-4 h-4 text-blue-400" /></button>
-                      <button 
-                        onClick={() => { 
-                          if (confirm("Are you sure you want to delete this post?")) { 
-                            const updated = blogPosts.filter(p => p.id !== post.id);
-                            setBlogPosts(updated);
-                            localStorage.setItem("blog_posts", JSON.stringify(updated));
-                          } 
+                      <button
+                        onClick={async () => {
+                          if (confirm("Are you sure you want to delete this post?")) {
+                            await supabase.from("blog_posts").delete().eq("id", post.id);
+                            setBlogPosts(prev => prev.filter(p => p.id !== post.id));
+                          }
                         }}
                         className="p-2 hover:bg-white/10 rounded-lg" title="Delete"
                       ><Trash2 className="w-4 h-4 text-red-400" /></button>
@@ -1953,8 +1948,8 @@ export default function AdminDashboard() {
                         </select>
                       </div>
                       <div className="flex gap-2">
-                        <button 
-                          onClick={() => {
+                        <button
+                          onClick={async () => {
                             const title = (document.getElementById("blogTitle") as HTMLInputElement).value;
                             const slug = (document.getElementById("blogSlug") as HTMLInputElement).value;
                             const excerpt = (document.getElementById("blogExcerpt") as HTMLTextAreaElement).value;
@@ -1964,26 +1959,21 @@ export default function AdminDashboard() {
                             const tags = (document.getElementById("blogTags") as HTMLInputElement).value.split(",").map(t => t.trim());
                             const status: "published" | "draft" | "scheduled" = "draft";
                             const imageUrl = (document.getElementById("blogImageUrl") as HTMLInputElement).value;
-                            
+
                             if (!title || !slug) { alert("Title and Slug are required!"); return; }
-                            
+
                             if (editingBlogPost) {
-                              const updated = blogPosts.map(p => p.id === editingBlogPost.id ? {
-                                ...p, title, slug, excerpt, content, category, author, tags, status, imageUrl, updatedAt: new Date().toISOString().split("T")[0]
-                              } : p);
-                              setBlogPosts(updated);
-                              localStorage.setItem("blog_posts", JSON.stringify(updated));
+                              const { data } = await supabase.from("blog_posts").update({
+                                title, slug, excerpt, content, category, author, tags, status,
+                                image_url: imageUrl, updated_at: new Date().toISOString()
+                              }).eq("id", editingBlogPost.id).select().single();
+                              if (data) setBlogPosts(prev => prev.map(p => p.id === editingBlogPost.id ? { ...p, title, slug, excerpt, content, category, author, tags, status, imageUrl } : p));
                             } else {
-                              const newPost: BlogPost = {
-                                id: Date.now().toString(),
-                                title, slug, excerpt, content, category, author, tags, status, imageUrl,
-                                views: 0,
-                                createdAt: new Date().toISOString().split("T")[0],
-                                updatedAt: new Date().toISOString().split("T")[0]
-                              };
-                              const updated = [...blogPosts, newPost];
-                              setBlogPosts(updated);
-                              localStorage.setItem("blog_posts", JSON.stringify(updated));
+                              const { data } = await supabase.from("blog_posts").insert([{
+                                title, slug, excerpt, content, category, author, tags, status,
+                                image_url: imageUrl, views: 0
+                              }]).select().single();
+                              if (data) setBlogPosts(prev => [...prev, { id: data.id, title, slug, excerpt, content, category, author, tags, status, imageUrl, views: 0, createdAt: data.created_at?.split("T")[0] || "", updatedAt: data.updated_at?.split("T")[0] || "" }]);
                             }
                             setShowBlogModal(false);
                           }}
@@ -1991,8 +1981,8 @@ export default function AdminDashboard() {
                         >
                           Save Draft
                         </button>
-                        <button 
-                          onClick={() => {
+                        <button
+                          onClick={async () => {
                             const title = (document.getElementById("blogTitle") as HTMLInputElement).value;
                             const slug = (document.getElementById("blogSlug") as HTMLInputElement).value;
                             const excerpt = (document.getElementById("blogExcerpt") as HTMLTextAreaElement).value;
@@ -2002,26 +1992,21 @@ export default function AdminDashboard() {
                             const tags = (document.getElementById("blogTags") as HTMLInputElement).value.split(",").map(t => t.trim());
                             const status: "published" | "draft" | "scheduled" = "published";
                             const imageUrl = (document.getElementById("blogImageUrl") as HTMLInputElement).value;
-                            
+
                             if (!title || !slug) { alert("Title and Slug are required!"); return; }
-                            
+
                             if (editingBlogPost) {
-                              const updated = blogPosts.map(p => p.id === editingBlogPost.id ? {
-                                ...p, title, slug, excerpt, content, category, author, tags, status, imageUrl, updatedAt: new Date().toISOString().split("T")[0]
-                              } : p);
-                              setBlogPosts(updated);
-                              localStorage.setItem("blog_posts", JSON.stringify(updated));
+                              const { data } = await supabase.from("blog_posts").update({
+                                title, slug, excerpt, content, category, author, tags, status,
+                                image_url: imageUrl, updated_at: new Date().toISOString()
+                              }).eq("id", editingBlogPost.id).select().single();
+                              if (data) setBlogPosts(prev => prev.map(p => p.id === editingBlogPost.id ? { ...p, title, slug, excerpt, content, category, author, tags, status, imageUrl } : p));
                             } else {
-                              const newPost: BlogPost = {
-                                id: Date.now().toString(),
-                                title, slug, excerpt, content, category, author, tags, status, imageUrl,
-                                views: 0,
-                                createdAt: new Date().toISOString().split("T")[0],
-                                updatedAt: new Date().toISOString().split("T")[0]
-                              };
-                              const updated = [...blogPosts, newPost];
-                              setBlogPosts(updated);
-                              localStorage.setItem("blog_posts", JSON.stringify(updated));
+                              const { data } = await supabase.from("blog_posts").insert([{
+                                title, slug, excerpt, content, category, author, tags, status,
+                                image_url: imageUrl, views: 0
+                              }]).select().single();
+                              if (data) setBlogPosts(prev => [...prev, { id: data.id, title, slug, excerpt, content, category, author, tags, status, imageUrl, views: 0, createdAt: data.created_at?.split("T")[0] || "", updatedAt: data.updated_at?.split("T")[0] || "" }]);
                             }
                             setShowBlogModal(false);
                           }}
@@ -2149,34 +2134,31 @@ export default function AdminDashboard() {
                           {faq.status}
                         </span>
                         {faq.status === "active" ? (
-                          <button 
-                            onClick={() => {
-                              const updated = faqs.map(f => f.id === faq.id ? { ...f, status: "inactive" as const } : f);
-                              setFaqs(updated);
-                              localStorage.setItem("faqs", JSON.stringify(updated));
+                          <button
+                            onClick={async () => {
+                              await supabase.from("faqs").update({ status: "inactive" }).eq("id", faq.id);
+                              setFaqs(prev => prev.map(f => f.id === faq.id ? { ...f, status: "inactive" as const } : f));
                             }}
                             className="p-2 hover:bg-white/10 rounded-lg" title="Deactivate"
                           ><XCircle className="w-4 h-4 text-yellow-400" /></button>
                         ) : (
-                          <button 
-                            onClick={() => {
-                              const updated = faqs.map(f => f.id === faq.id ? { ...f, status: "active" as const } : f);
-                              setFaqs(updated);
-                              localStorage.setItem("faqs", JSON.stringify(updated));
+                          <button
+                            onClick={async () => {
+                              await supabase.from("faqs").update({ status: "active" }).eq("id", faq.id);
+                              setFaqs(prev => prev.map(f => f.id === faq.id ? { ...f, status: "active" as const } : f));
                             }}
                             className="p-2 hover:bg-white/10 rounded-lg" title="Activate"
                           ><CheckCircle className="w-4 h-4 text-green-400" /></button>
                         )}
-                        <button 
+                        <button
                           onClick={() => { setEditingFaq(faq); setShowFaqModal(true); }}
                           className="p-2 hover:bg-white/10 rounded-lg" title="Edit"
                         ><Edit className="w-4 h-4 text-blue-400" /></button>
-                        <button 
-                          onClick={() => { 
+                        <button
+                          onClick={async () => {
                             if (confirm("Are you sure you want to delete this FAQ?")) {
-                              const updated = faqs.filter(f => f.id !== faq.id);
-                              setFaqs(updated);
-                              localStorage.setItem("faqs", JSON.stringify(updated));
+                              await supabase.from("faqs").delete().eq("id", faq.id);
+                              setFaqs(prev => prev.filter(f => f.id !== faq.id));
                             }
                           }}
                           className="p-2 hover:bg-white/10 rounded-lg" title="Delete"
@@ -2264,30 +2246,22 @@ export default function AdminDashboard() {
                   >
                     Cancel
                   </button>
-                  <button 
-                    onClick={() => {
+                  <button
+                    onClick={async () => {
                       const question = (document.getElementById("faqQuestion") as HTMLInputElement).value;
                       const answer = (document.getElementById("faqAnswer") as HTMLTextAreaElement).value;
                       const category = (document.getElementById("faqCategory") as HTMLInputElement).value;
                       const order = parseInt((document.getElementById("faqOrder") as HTMLInputElement).value) || 1;
                       const status = (document.getElementById("faqStatus") as HTMLSelectElement).value as "active" | "inactive";
-                      
+
                       if (!question || !answer) { alert("Question and Answer are required!"); return; }
-                      
+
                       if (editingFaq) {
-                        const updated = faqs.map(f => f.id === editingFaq.id ? {
-                          ...f, question, answer, category, order, status
-                        } : f);
-                        setFaqs(updated);
-                        localStorage.setItem("faqs", JSON.stringify(updated));
+                        const { data } = await supabase.from("faqs").update({ question, answer, category, order, status }).eq("id", editingFaq.id).select().single();
+                        if (data) setFaqs(prev => prev.map(f => f.id === editingFaq.id ? { ...f, question, answer, category, order, status } : f));
                       } else {
-                        const newFaq: FAQ = {
-                          id: Date.now().toString(),
-                          question, answer, category, order, status
-                        };
-                        const updated = [...faqs, newFaq];
-                        setFaqs(updated);
-                        localStorage.setItem("faqs", JSON.stringify(updated));
+                        const { data } = await supabase.from("faqs").insert([{ question, answer, category, order, status }]).select().single();
+                        if (data) setFaqs(prev => [...prev, { id: data.id, question, answer, category, order, status }]);
                       }
                       setShowFaqModal(false);
                     }}

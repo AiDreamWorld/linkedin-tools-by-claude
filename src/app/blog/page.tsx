@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { BookOpen, Eye, ArrowRight, PenSquare } from "lucide-react";
 import type { Metadata } from "next";
-import blogPosts from "@/data/blog-posts.json";
+import { supabase } from "@/lib/supabase";
 
 export const metadata: Metadata = {
   title: "LinkedIn Blog – Tips, Guides & Strategies",
-  description: "Expert LinkedIn tips, career strategies, and profile guides to help you grow professionally and land your dream job.",
+  description: "Expert LinkedIn tips, career strategies, and profile guides to help you grow professionally.",
 };
+
+export const revalidate = 60; // revalidate every 60 seconds
 
 interface BlogPost {
   id: string;
@@ -19,9 +21,8 @@ interface BlogPost {
   category: string;
   tags: string[];
   views: number;
-  createdAt: string;
-  updatedAt: string;
-  imageUrl?: string;
+  created_at: string;
+  image_url?: string;
 }
 
 const categoryColors: Record<string, string> = {
@@ -36,8 +37,12 @@ const categoryColors: Record<string, string> = {
   Communication: "bg-rose-100 text-rose-700",
 };
 
-export default function BlogPage() {
-  const posts = (blogPosts as BlogPost[]).filter((p) => p.status === "published");
+export default async function BlogPage() {
+  const { data: posts } = await supabase
+    .from("blog_posts")
+    .select("*")
+    .eq("status", "published")
+    .order("created_at", { ascending: false });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -56,7 +61,7 @@ export default function BlogPage() {
 
       {/* Posts Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {posts.length === 0 ? (
+        {!posts || posts.length === 0 ? (
           <div className="text-center py-16">
             <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-2">No blog posts yet.</p>
@@ -64,18 +69,14 @@ export default function BlogPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
+            {(posts as BlogPost[]).map((post) => (
               <article
                 key={post.id}
                 className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:border-[#0A66C2] hover:shadow-lg transition-all duration-300 group"
               >
-                {post.imageUrl ? (
+                {post.image_url ? (
                   <div className="h-48 overflow-hidden">
-                    <img
-                      src={post.imageUrl}
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                    <img src={post.image_url} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 ) : (
                   <div className="h-40 bg-gradient-to-br from-[#0A66C2]/10 to-[#7c3aed]/10 flex items-center justify-center">
@@ -84,15 +85,11 @@ export default function BlogPage() {
                 )}
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-3">
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        categoryColors[post.category] || "bg-gray-100 text-gray-600"
-                      }`}
-                    >
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${categoryColors[post.category] || "bg-gray-100 text-gray-600"}`}>
                       {post.category}
                     </span>
                     <span className="text-gray-400 text-xs flex items-center gap-1">
-                      <Eye className="w-3 h-3" /> {post.views.toLocaleString()}
+                      <Eye className="w-3 h-3" /> {(post.views || 0).toLocaleString()}
                     </span>
                   </div>
                   <h2 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-[#0A66C2] transition-colors">
@@ -100,11 +97,8 @@ export default function BlogPage() {
                   </h2>
                   <p className="text-gray-500 text-sm mb-4 line-clamp-2">{post.excerpt}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-xs">{post.createdAt}</span>
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="text-[#0A66C2] text-sm font-medium hover:text-[#7c3aed] transition flex items-center gap-1"
-                    >
+                    <span className="text-gray-400 text-xs">{new Date(post.created_at).toLocaleDateString()}</span>
+                    <Link href={`/blog/${post.slug}`} className="text-[#0A66C2] text-sm font-medium hover:text-[#7c3aed] transition flex items-center gap-1">
                       Read More <ArrowRight className="w-4 h-4" />
                     </Link>
                   </div>
@@ -123,10 +117,7 @@ export default function BlogPage() {
           <p className="text-gray-600 mb-6 max-w-xl mx-auto">
             Share your LinkedIn expertise with our community. We&apos;re always looking for guest contributors.
           </p>
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0A66C2] to-[#7c3aed] text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
-          >
+          <Link href="/contact" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0A66C2] to-[#7c3aed] text-white rounded-xl font-medium hover:opacity-90 transition-opacity">
             Get In Touch <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
