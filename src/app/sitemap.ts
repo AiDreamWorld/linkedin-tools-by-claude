@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const BASE_URL = "https://linkforge.tools";
+const BASE_URL = "https://linkedin-tools-by-claude.vercel.app";
 
 const toolSlugs = [
   "about-writer", "banner-ideas", "banner-maker", "brand-statement",

@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Linkedin, Download, Plus, Trash2, FileText, Briefcase, GraduationCap, Award, Languages, Sparkles, Eye, EyeOff, RefreshCw, Check, Copy } from "lucide-react";
-import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
+// html2canvas and jsPDF are dynamically imported in downloadPDF to avoid SSR issues
 
 interface Experience {
   id: string;
@@ -203,23 +202,66 @@ export default function CvGeneratorTool() {
     setFormData({ ...formData, languages: formData.languages.filter(l => l !== lang) });
   };
 
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState("");
+
   const downloadPDF = async () => {
     if (!cvRef.current) return;
-    
-    const canvas = await html2canvas(cvRef.current, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-    });
-    
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`${formData.name || "cv"}-resume.pdf`);
+    setPdfLoading(true);
+    setPdfError("");
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const canvas = await html2canvas(cvRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        imageTimeout: 0,
+      });
+
+      const imgData = canvas.toDataURL("image/png", 1.0);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();   // 210mm
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      const imgHeightMm = (canvas.height * pdfWidth) / canvas.width;
+
+      // Multi-page support: slice image across A4 pages
+      let yOffset = 0;
+      let remainingHeight = imgHeightMm;
+      let pageNum = 0;
+
+      while (remainingHeight > 0) {
+        if (pageNum > 0) pdf.addPage();
+        // How many mm of image fit on this page
+        const sliceHeight = Math.min(remainingHeight, pdfHeight);
+        // Convert mm slice to canvas pixel coordinates
+        const srcY = (yOffset / imgHeightMm) * canvas.height;
+        const srcH = (sliceHeight / imgHeightMm) * canvas.height;
+
+        // Create a slice canvas
+        const sliceCanvas = document.createElement("canvas");
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = srcH;
+        const ctx = sliceCanvas.getContext("2d")!;
+        ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+        pdf.addImage(sliceCanvas.toDataURL("image/png", 1.0), "PNG", 0, 0, pdfWidth, sliceHeight);
+        yOffset += sliceHeight;
+        remainingHeight -= sliceHeight;
+        pageNum++;
+      }
+
+      const filename = `${(formData.name || "cv").replace(/\s+/g, "-").toLowerCase()}-resume.pdf`;
+      pdf.save(filename);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      setPdfError("PDF export failed. Please try again.");
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const copyToClipboard = () => {
@@ -888,13 +930,18 @@ export default function CvGeneratorTool() {
             )}
 
             {/* Action Buttons */}
+            {pdfError && <p className="text-red-500 text-sm text-center">{pdfError}</p>}
             <div className="flex gap-3">
               <button
                 onClick={downloadPDF}
-                className="flex-1 py-4 bg-gradient-to-r from-[#0A66C2] to-[#057642] text-white rounded-xl font-semibold hover:opacity-90 flex items-center justify-center gap-2"
+                disabled={pdfLoading}
+                className="flex-1 py-4 bg-gradient-to-r from-[#0A66C2] to-[#057642] text-white rounded-xl font-semibold hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                <Download className="w-5 h-5" />
-                Download PDF
+                {pdfLoading ? (
+                  <><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating PDF...</>
+                ) : (
+                  <><Download className="w-5 h-5" /> Download PDF</>
+                )}
               </button>
               <button
                 onClick={copyToClipboard}

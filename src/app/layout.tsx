@@ -17,11 +17,11 @@ export const metadata: Metadata = {
   keywords: ["linkedin tools", "free linkedin tools", "linkedin headline generator", "linkedin post generator", "cv generator", "job tracker", "linkedin profile optimizer", "cover letter generator", "linkedin banner maker"],
   authors: [{ name: "LinkForge" }],
   creator: "LinkForge",
-  metadataBase: new URL("https://linkforge.tools"),
+  metadataBase: new URL("https://linkedin-tools-by-claude.vercel.app"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://linkforge.tools",
+    url: "https://linkedin-tools-by-claude.vercel.app",
     title: "LinkForge – 40+ Free LinkedIn Tools",
     description: "Optimize your LinkedIn profile, create engaging content, track job applications, and advance your career with 40+ free tools.",
     siteName: "LinkForge",

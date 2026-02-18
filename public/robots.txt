@@ -4,4 +4,4 @@ Allow: /
 Disallow: /settings
 Disallow: /admin
 
-Sitemap: https://linkforge.tools/sitemap.xml
+Sitemap: https://linkedin-tools-by-claude.vercel.app/sitemap.xml
