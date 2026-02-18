@@ -4,18 +4,18 @@ import { useState, useRef } from "react";
 import { Download, Layout, Type, Image, Palette, Move } from "lucide-react";
 
 const bannerTemplates = [
-  { name: "Professional Blue", gradient: "from-[#0A66C2] to-[#004182]", text: "text-white", accent: "white" },
-  { name: "Purple Haze", gradient: "from-[#7c3aed] to-[#5b21b6]", text: "text-white", accent: "white" },
-  { name: "Sunset Orange", gradient: "from-[#ea580c] to-[#c2410c]", text: "text-white", accent: "white" },
-  { name: "Forest Green", gradient: "from-[#057642] to-[#065f46]", text: "text-white", accent: "white" },
-  { name: "Pink Dreams", gradient: "from-[#db2777] to-[#be185d]", text: "text-white", accent: "white" },
-  { name: "Dark Mode", gradient: "from-[#1f2937] to-[#111827]", text: "text-white", accent: "white" },
-  { name: "Light Clean", gradient: "from-[#f3f4f6] to-[#e5e7eb]", text: "text-gray-900", accent: "gray" },
-  { name: "Tech Blue", gradient: "from-[#2563eb] to-[#1d4ed8]", text: "text-white", accent: "white" },
-  { name: "Ocean", gradient: "from-[#06b6d4] to-[#0891b2]", text: "text-white", accent: "white" },
-  { name: "Gold", gradient: "from-[#f59e0b] to-[#d97706]", text: "text-white", accent: "white" },
-  { name: "Ruby", gradient: "from-[#ef4444] to-[#dc2626]", text: "text-white", accent: "white" },
-  { name: "Mint", gradient: "from-[#10b981] to-[#059669]", text: "text-white", accent: "white" },
+  { name: "Professional Blue", gradient: "from-[#0A66C2] to-[#004182]", colors: ["#0A66C2", "#004182"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Purple Haze", gradient: "from-[#7c3aed] to-[#5b21b6]", colors: ["#7c3aed", "#5b21b6"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Sunset Orange", gradient: "from-[#ea580c] to-[#c2410c]", colors: ["#ea580c", "#c2410c"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Forest Green", gradient: "from-[#057642] to-[#065f46]", colors: ["#057642", "#065f46"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Pink Dreams", gradient: "from-[#db2777] to-[#be185d]", colors: ["#db2777", "#be185d"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Dark Mode", gradient: "from-[#1f2937] to-[#111827]", colors: ["#1f2937", "#111827"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Light Clean", gradient: "from-[#f3f4f6] to-[#e5e7eb]", colors: ["#f3f4f6", "#e5e7eb"], text: "text-gray-900", textColor: "#111827", accent: "gray" },
+  { name: "Tech Blue", gradient: "from-[#2563eb] to-[#1d4ed8]", colors: ["#2563eb", "#1d4ed8"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Ocean", gradient: "from-[#06b6d4] to-[#0891b2]", colors: ["#06b6d4", "#0891b2"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Gold", gradient: "from-[#f59e0b] to-[#d97706]", colors: ["#f59e0b", "#d97706"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Ruby", gradient: "from-[#ef4444] to-[#dc2626]", colors: ["#ef4444", "#dc2626"], text: "text-white", textColor: "#ffffff", accent: "white" },
+  { name: "Mint", gradient: "from-[#10b981] to-[#059669]", colors: ["#10b981", "#059669"], text: "text-white", textColor: "#ffffff", accent: "white" },
 ];
 
 const layouts = [
@@ -66,18 +66,27 @@ export default function BannerMakerTool() {
     setDownloadError("");
     try {
       const html2canvas = (await import("html2canvas")).default;
+      // LinkedIn banner recommended size: 1584 x 396px
+      const previewWidth = bannerRef.current.offsetWidth;
+      const targetWidth = 1584;
+      const scale = targetWidth / previewWidth;
       const canvas = await html2canvas(bannerRef.current, {
         useCORS: true,
         allowTaint: true,
-        scale: 2,
+        scale: scale,
         backgroundColor: null,
+        logging: false,
+        imageTimeout: 0,
       });
       const link = document.createElement("a");
-      link.download = `linkedin-banner-${Date.now()}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.download = `linkedin-banner-linkforge.png`;
+      link.href = canvas.toDataURL("image/png", 1.0);
+      document.body.appendChild(link);
       link.click();
-    } catch {
-      setDownloadError("Download failed. Try taking a screenshot instead.");
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Banner download error:", err);
+      setDownloadError("Download failed. Please try again or take a screenshot.");
     } finally {
       setDownloading(false);
     }
@@ -96,26 +105,50 @@ export default function BannerMakerTool() {
       </div>
 
       <div className="space-y-6">
-        <div ref={bannerRef} className={`w-full aspect-[4/1] bg-gradient-to-r ${template.gradient} rounded-xl flex ${getLayoutClass()} p-8 relative overflow-hidden`}>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
-          
+        <div
+          ref={bannerRef}
+          className={`w-full aspect-[4/1] rounded-xl flex ${getLayoutClass()} p-8 relative overflow-hidden`}
+          style={{ background: `linear-gradient(to right, ${template.colors[0]}, ${template.colors[1]})` }}
+        >
+          <div
+            className="absolute top-0 right-0 w-64 h-64 rounded-full -translate-y-1/2 translate-x-1/2"
+            style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+          />
+          <div
+            className="absolute bottom-0 left-0 w-48 h-48 rounded-full translate-y-1/2 -translate-x-1/2"
+            style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+          />
+
           <div className="relative z-10">
             {showIcon && (
-              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ backgroundColor: "rgba(255,255,255,0.2)" }}
+              >
+                <svg className="w-10 h-10" style={{ color: template.textColor }} fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                 </svg>
               </div>
             )}
-            <h3 className={`${fontSizes.name} font-bold ${template.text} mb-2`}>
+            <h3
+              className={`${fontSizes.name} font-bold mb-2`}
+              style={{ color: template.textColor }}
+            >
               {name || "Your Name"}
             </h3>
-            <p className={`${fontSizes.title} ${template.text} opacity-80`}>
+            <p
+              className={`${fontSizes.title}`}
+              style={{ color: template.textColor, opacity: 0.85 }}
+            >
               {title || "Your Title"}
             </p>
             {showTagline && tagline && (
-              <p className={`text-sm ${template.text} opacity-60 mt-2`}>{tagline}</p>
+              <p
+                className="text-sm mt-2"
+                style={{ color: template.textColor, opacity: 0.65 }}
+              >
+                {tagline}
+              </p>
             )}
           </div>
         </div>
