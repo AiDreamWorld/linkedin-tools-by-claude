@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /settings
+Disallow: /admin
+
+Sitemap: https://linkforge.tools/sitemap.xml
