@@ -50,7 +50,10 @@ interface StaticPage {
   slug: string;
   content: string;
   status: "published" | "draft";
-  lastUpdated: string;
+  meta_title: string;
+  meta_description: string;
+  sort_order: number;
+  updated_at: string;
 }
 
 interface SEOConfig {
@@ -464,16 +467,17 @@ export default function AdminDashboard() {
       })) : []);
     });
     
-    const storedPages = localStorage.getItem("static_pages");
-    if (storedPages) {
-      try {
-        setStaticPages(JSON.parse(storedPages));
-      } catch {
-        setStaticPages(generateStaticPages());
+    supabase.from("pages").select("*").order("sort_order", { ascending: true }).then(({ data }) => {
+      if (data && data.length > 0) {
+        setStaticPages(data.map(p => ({
+          id: p.id, title: p.title, slug: p.slug, content: p.content || "",
+          status: p.status, meta_title: p.meta_title || "", meta_description: p.meta_description || "",
+          sort_order: p.sort_order || 0, updated_at: p.updated_at || p.created_at,
+        })));
+      } else {
+        setStaticPages([]);
       }
-    } else {
-      setStaticPages(generateStaticPages());
-    }
+    });
     
     const storedSeo = localStorage.getItem("seo_configs");
     if (storedSeo) {
@@ -749,15 +753,7 @@ export default function AdminDashboard() {
     { id: "4", question: "Is my data secure?", answer: "We don't store your personal data. All processing happens in your browser.", category: "Privacy", order: 4, status: "active" },
   ];
 
-  const generateStaticPages = (): StaticPage[] => [
-    { id: "1", title: "Home", slug: "/", content: "...", status: "published", lastUpdated: "2024-08-01" },
-    { id: "2", title: "All Tools", slug: "/tools", content: "...", status: "published", lastUpdated: "2024-08-01" },
-    { id: "3", title: "About Us", slug: "/about", content: "...", status: "published", lastUpdated: "2024-07-15" },
-    { id: "4", title: "Contact", slug: "/contact", content: "...", status: "published", lastUpdated: "2024-07-15" },
-    { id: "5", title: "Privacy Policy", slug: "/privacy", content: "...", status: "published", lastUpdated: "2024-06-01" },
-    { id: "6", title: "Terms of Service", slug: "/terms", content: "...", status: "published", lastUpdated: "2024-06-01" },
-    { id: "7", title: "FAQ", slug: "/faq", content: "...", status: "published", lastUpdated: "2024-07-20" },
-  ];
+  // Pages are now loaded from Supabase — no local defaults needed
 
   const generateSeoConfigs = (): SEOConfig[] => [
     { page: "Home", title: "LinkForge - Free LinkedIn Tools for Students", description: "Supercharge your LinkedIn with free tools", keywords: ["linkedin tools", "free linkedin", "students"], ogImage: "/og-home.jpg" },
@@ -2326,44 +2322,41 @@ export default function AdminDashboard() {
                             {page.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-gray-400">{page.lastUpdated}</td>
+                        <td className="py-3 px-4 text-gray-400 text-sm">{new Date(page.updated_at).toLocaleDateString()}</td>
                         <td className="py-3 px-4">
                           <div className="flex items-center justify-end gap-2">
                             {page.status === "published" ? (
-                              <button 
-                                onClick={() => {
-                                  const updated = staticPages.map(p => p.id === page.id ? { ...p, status: "draft" as const, lastUpdated: new Date().toISOString().split("T")[0] } : p);
-                                  setStaticPages(updated);
-                                  localStorage.setItem("static_pages", JSON.stringify(updated));
+                              <button
+                                onClick={async () => {
+                                  await supabase.from("pages").update({ status: "draft", updated_at: new Date().toISOString() }).eq("id", page.id);
+                                  setStaticPages(prev => prev.map(p => p.id === page.id ? { ...p, status: "draft" as const, updated_at: new Date().toISOString() } : p));
                                 }}
                                 className="p-2 hover:bg-white/10 rounded-lg" title="Unpublish"
                               ><FileText className="w-4 h-4 text-yellow-400" /></button>
                             ) : (
-                              <button 
-                                onClick={() => {
-                                  const updated = staticPages.map(p => p.id === page.id ? { ...p, status: "published" as const, lastUpdated: new Date().toISOString().split("T")[0] } : p);
-                                  setStaticPages(updated);
-                                  localStorage.setItem("static_pages", JSON.stringify(updated));
+                              <button
+                                onClick={async () => {
+                                  await supabase.from("pages").update({ status: "published", updated_at: new Date().toISOString() }).eq("id", page.id);
+                                  setStaticPages(prev => prev.map(p => p.id === page.id ? { ...p, status: "published" as const, updated_at: new Date().toISOString() } : p));
                                 }}
                                 className="p-2 hover:bg-white/10 rounded-lg" title="Publish"
                               ><CheckCircle className="w-4 h-4 text-green-400" /></button>
                             )}
-                            <button 
+                            <button
                               onClick={() => { setEditingPage(page); setShowPageModal(true); }}
                               className="p-2 hover:bg-white/10 rounded-lg" title="Edit"
                             ><Edit className="w-4 h-4 text-blue-400" /></button>
-                            <a 
-                              href={page.slug} 
-                              target="_blank" 
+                            <a
+                              href={`https://linkedin-tools-by-claude.vercel.app${page.slug}`}
+                              target="_blank"
                               rel="noopener noreferrer"
-                              className="p-2 hover:bg-white/10 rounded-lg" title="View"
+                              className="p-2 hover:bg-white/10 rounded-lg" title="View Live Page"
                             ><ExternalLink className="w-4 h-4 text-gray-400" /></a>
-                            <button 
-                              onClick={() => { 
-                                if (confirm("Are you sure you want to delete this page?")) {
-                                  const updated = staticPages.filter(p => p.id !== page.id);
-                                  setStaticPages(updated);
-                                  localStorage.setItem("static_pages", JSON.stringify(updated));
+                            <button
+                              onClick={async () => {
+                                if (confirm(`Delete "${page.title}"? This cannot be undone.`)) {
+                                  await supabase.from("pages").delete().eq("id", page.id);
+                                  setStaticPages(prev => prev.filter(p => p.id !== page.id));
                                 }
                               }}
                               className="p-2 hover:bg-white/10 rounded-lg" title="Delete"
@@ -2390,106 +2383,121 @@ export default function AdminDashboard() {
               </div>
               
               <div className="space-y-6">
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2 font-medium">Page Title *</label>
-                  <input 
-                    type="text" 
-                    defaultValue={editingPage?.title || ""}
-                    id="pageTitle"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white text-lg"
-                    placeholder="Page Title"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2 font-medium">Slug *</label>
-                  <input 
-                    type="text" 
-                    defaultValue={editingPage?.slug || ""}
-                    id="pageSlug"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white"
-                    placeholder="/page-slug"
-                  />
-                  <p className="text-gray-500 text-xs mt-1">URL path (e.g., /about, /contact)</p>
-                </div>
-                
-                <div>
-                  <label className="block text-gray-400 text-sm mb-2 font-medium">Page Content</label>
-                  <textarea 
-                    defaultValue={editingPage?.content || ""}
-                    id="pageContent"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white h-64 font-mono text-sm"
-                    placeholder="Write your page content here..."
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-gray-400 text-sm mb-2 font-medium">Status</label>
-                    <select 
-                      defaultValue={editingPage?.status || "draft"}
-                      id="pageStatus"
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white"
-                    >
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-gray-400 text-sm mb-2 font-medium">Meta Title</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-gray-400 text-sm mb-2 font-medium">Page Title *</label>
+                    <input
+                      type="text"
                       defaultValue={editingPage?.title || ""}
-                      id="pageMetaTitle"
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white"
-                      placeholder="SEO Title"
+                      id="pageTitle"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white text-lg"
+                      placeholder="Page Title"
                     />
                   </div>
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2 font-medium">Slug *</label>
+                    <input
+                      type="text"
+                      defaultValue={editingPage?.slug || ""}
+                      id="pageSlug"
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white"
+                      placeholder="/page-slug"
+                    />
+                    <p className="text-gray-500 text-xs mt-1">URL path (e.g., /about, /contact)</p>
+                  </div>
                 </div>
-                
+
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2 font-medium">Meta Description</label>
-                  <textarea 
-                    defaultValue={""}
-                    id="pageMetaDescription"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white h-20"
-                    placeholder="SEO meta description"
+                  <label className="block text-gray-400 text-sm mb-2 font-medium">Status</label>
+                  <select
+                    defaultValue={editingPage?.status || "published"}
+                    id="pageStatus"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white"
+                  >
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
+
+                <div className="border-t border-white/10 pt-6">
+                  <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                    <FlaskConical className="w-4 h-4 text-green-400" /> SEO Settings
+                  </h4>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-gray-400 text-sm mb-2 font-medium">Meta Title <span className="text-gray-500 font-normal">(shown in Google search results — 50–60 chars ideal)</span></label>
+                      <input
+                        type="text"
+                        defaultValue={editingPage?.meta_title || ""}
+                        id="pageMetaTitle"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white"
+                        placeholder="Page title for Google search results"
+                        maxLength={70}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 text-sm mb-2 font-medium">Meta Description <span className="text-gray-500 font-normal">(shown under title in Google — 120–160 chars ideal)</span></label>
+                      <textarea
+                        defaultValue={editingPage?.meta_description || ""}
+                        id="pageMetaDescription"
+                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white h-20 resize-none"
+                        placeholder="Brief description that appears under the page title in search results"
+                        maxLength={200}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2 font-medium">Notes / Internal Content <span className="text-gray-500 font-normal">(optional, not shown on site)</span></label>
+                  <textarea
+                    defaultValue={editingPage?.content || ""}
+                    id="pageContent"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white h-28 font-mono text-sm resize-none"
+                    placeholder="Internal notes about this page..."
                   />
                 </div>
-                
+
                 <div className="flex justify-end gap-3 pt-4">
-                  <button 
+                  <button
                     onClick={() => setShowPageModal(false)}
                     className="px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20"
                   >
                     Cancel
                   </button>
-                  <button 
-                    onClick={() => {
-                      const title = (document.getElementById("pageTitle") as HTMLInputElement).value;
-                      const slug = (document.getElementById("pageSlug") as HTMLInputElement).value;
+                  <button
+                    onClick={async () => {
+                      const title = (document.getElementById("pageTitle") as HTMLInputElement).value.trim();
+                      const slug = (document.getElementById("pageSlug") as HTMLInputElement).value.trim();
                       const content = (document.getElementById("pageContent") as HTMLTextAreaElement).value;
                       const status = (document.getElementById("pageStatus") as HTMLSelectElement).value as "published" | "draft";
-                      
+                      const meta_title = (document.getElementById("pageMetaTitle") as HTMLInputElement).value.trim();
+                      const meta_description = (document.getElementById("pageMetaDescription") as HTMLTextAreaElement).value.trim();
+
                       if (!title || !slug) { alert("Title and Slug are required!"); return; }
-                      
+
                       const finalSlug = slug.startsWith("/") ? slug : "/" + slug;
-                      
+                      const now = new Date().toISOString();
+
                       if (editingPage) {
-                        const updated = staticPages.map(p => p.id === editingPage.id ? {
-                          ...p, title, slug: finalSlug, content, status, lastUpdated: new Date().toISOString().split("T")[0]
-                        } : p);
-                        setStaticPages(updated);
-                        localStorage.setItem("static_pages", JSON.stringify(updated));
+                        const { data } = await supabase.from("pages")
+                          .update({ title, slug: finalSlug, content, status, meta_title, meta_description, updated_at: now })
+                          .eq("id", editingPage.id).select().single();
+                        if (data) {
+                          setStaticPages(prev => prev.map(p => p.id === editingPage.id ? {
+                            ...p, title, slug: finalSlug, content, status, meta_title, meta_description, updated_at: now
+                          } : p));
+                        }
                       } else {
-                        const newPage: StaticPage = {
-                          id: Date.now().toString(),
-                          title, slug: finalSlug, content, status,
-                          lastUpdated: new Date().toISOString().split("T")[0]
-                        };
-                        const updated = [...staticPages, newPage];
-                        setStaticPages(updated);
-                        localStorage.setItem("static_pages", JSON.stringify(updated));
+                        const { data } = await supabase.from("pages")
+                          .insert([{ title, slug: finalSlug, content, status, meta_title, meta_description, sort_order: staticPages.length + 1 }])
+                          .select().single();
+                        if (data) {
+                          setStaticPages(prev => [...prev, {
+                            id: data.id, title, slug: finalSlug, content, status,
+                            meta_title, meta_description, sort_order: data.sort_order, updated_at: data.updated_at
+                          }]);
+                        }
                       }
                       setShowPageModal(false);
                     }}
