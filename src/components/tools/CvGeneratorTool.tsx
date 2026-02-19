@@ -6,7 +6,7 @@ import {
   Download, Plus, Trash2, FileText, Briefcase, GraduationCap,
   Award, Languages, Sparkles, Eye, EyeOff, Check, Copy,
   ChevronDown, ChevronUp, Palette, Type, Globe, Mail, Phone,
-  MapPin, Linkedin, Star, Heart, Code
+  MapPin, Linkedin, Star, Heart, Code, Upload, AlertCircle, X
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -104,6 +104,149 @@ export default function CvGeneratorTool() {
   const removeSkill = (s: string) => setFormData(p => ({ ...p, skills: p.skills.filter(x => x !== s) }));
   const addLang = (l: string) => { if (l.trim() && !fd.languages.includes(l.trim())) { setFormData(p => ({ ...p, languages: [...p.languages, l.trim()] })); setLangInput(""); } };
   const removeLang = (l: string) => setFormData(p => ({ ...p, languages: p.languages.filter(x => x !== l) }));
+
+  // ─── LinkedIn Text Import ─────────────────────────────────────────────────
+
+  const [showImport, setShowImport]     = useState(false);
+  const [importText, setImportText]     = useState("");
+  const [importDone, setImportDone]     = useState(false);
+
+  const parseLinkedInText = () => {
+    const text = importText.trim();
+    if (!text) return;
+
+    // ── Name: first non-empty line that looks like a name (2+ words, no url/symbols)
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    let name = "";
+    for (const line of lines.slice(0, 6)) {
+      if (/^[A-Za-z\s'\-\.]{3,40}$/.test(line) && line.split(" ").length >= 2 && line.split(" ").length <= 5) {
+        name = line; break;
+      }
+    }
+
+    // ── Headline/title: line after name that looks like a job title
+    let title = "";
+    const nameIdx = lines.indexOf(name);
+    if (nameIdx >= 0 && lines[nameIdx + 1]) title = lines[nameIdx + 1];
+
+    // ── Email
+    const emailMatch = text.match(/[\w.+-]+@[\w-]+\.[a-z]{2,}/i);
+    const email = emailMatch ? emailMatch[0] : "";
+
+    // ── Phone
+    const phoneMatch = text.match(/(\+?\d[\d\s\-().]{7,18}\d)/);
+    const phone = phoneMatch ? phoneMatch[0].trim() : "";
+
+    // ── Location: look for city/country patterns
+    const locationMatch = text.match(/(?:Location|Based in|lives? in)[:\s]+([^\n]+)/i)
+      || text.match(/([A-Z][a-z]+(?:,\s*[A-Z][a-z]+)*(?:,\s*[A-Z]{2,})?)/);
+    const location = locationMatch ? locationMatch[1].trim() : "";
+
+    // ── LinkedIn URL
+    const linkedinMatch = text.match(/linkedin\.com\/in\/[\w\-]+/i);
+    const linkedin = linkedinMatch ? linkedinMatch[0] : "";
+
+    // ── Website
+    const websiteMatch = text.match(/https?:\/\/(?!linkedin|twitter|facebook)[^\s]+/i);
+    const website = websiteMatch ? websiteMatch[0] : "";
+
+    // ── Summary: block after "About" or "Summary" heading
+    const aboutMatch = text.match(/(?:About|Summary|Bio)\s*\n+([\s\S]{20,600}?)(?:\n{2,}|\n(?:Experience|Education|Skills|Certifi|Work|Projects))/i);
+    const summary = aboutMatch ? aboutMatch[1].replace(/\n+/g, " ").trim() : "";
+
+    // ── Skills: find "Skills" section and grab comma/newline separated items
+    const skillsMatch = text.match(/(?:Skills|Top Skills|Key Skills)\s*\n+([\s\S]{5,600}?)(?:\n{2,}|\n(?:Experience|Education|Certifi|Languages|About|Summary))/i);
+    let skills: string[] = [];
+    if (skillsMatch) {
+      skills = skillsMatch[1]
+        .split(/[\n,•·|]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 1 && s.length < 50 && !/^\d+$/.test(s))
+        .slice(0, 20);
+    }
+
+    // ── Languages
+    const langMatch = text.match(/(?:Languages)\s*\n+([\s\S]{5,300}?)(?:\n{2,}|\n(?:Experience|Education|Certifi|Skills|About))/i);
+    let langs: string[] = [];
+    if (langMatch) {
+      langs = langMatch[1]
+        .split(/[\n,•·|]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 1 && s.length < 40)
+        .slice(0, 8);
+    }
+
+    // ── Experience: parse each job block
+    const expSection = text.match(/Experience\s*\n+([\s\S]+?)(?:\n{2,}(?:Education|Skills|Certifi|Languages|About|Projects)|\n{3,}|$)/i);
+    const newExperiences: Experience[] = [];
+    if (expSection) {
+      const expText = expSection[1];
+      // Split on double-newlines (each job block)
+      const blocks = expText.split(/\n{2,}/);
+      for (const block of blocks.slice(0, 6)) {
+        const bLines = block.split("\n").map(l => l.trim()).filter(Boolean);
+        if (bLines.length < 2) continue;
+        const role = bLines[0] || "";
+        const company = bLines[1] || "";
+        // Look for date range: "Jan 2020 – Dec 2022" or "2019 - Present"
+        const dateMatch = block.match(/([A-Za-z]{0,3}\.?\s*\d{4})\s*[–\-–—]\s*(Present|[A-Za-z]{0,3}\.?\s*\d{4})/i);
+        const startDate = dateMatch ? dateMatch[1].trim() : "";
+        const endDateRaw = dateMatch ? dateMatch[2].trim() : "";
+        const current = /present/i.test(endDateRaw);
+        const endDate = current ? "" : endDateRaw;
+        const description = bLines.slice(2).filter(l => !dateMatch || !l.includes(dateMatch[0])).join("\n");
+        if (role && company) {
+          newExperiences.push({ id: Date.now().toString() + Math.random(), role, company, startDate, endDate, current, description });
+        }
+      }
+    }
+
+    // ── Education: parse each edu block
+    const eduSection = text.match(/Education\s*\n+([\s\S]+?)(?:\n{2,}(?:Experience|Skills|Certifi|Languages|About|Projects)|\n{3,}|$)/i);
+    const newEducation: Education[] = [];
+    if (eduSection) {
+      const blocks = eduSection[1].split(/\n{2,}/);
+      for (const block of blocks.slice(0, 4)) {
+        const bLines = block.split("\n").map(l => l.trim()).filter(Boolean);
+        if (bLines.length < 1) continue;
+        const institution = bLines[0] || "";
+        const degree = bLines[1] || "";
+        const yearMatch = block.match(/(\d{4})\s*[–\-—]\s*(\d{4}|Present)/i);
+        const startYear = yearMatch ? yearMatch[1] : "";
+        const endYear = yearMatch ? (/present/i.test(yearMatch[2]) ? "" : yearMatch[2]) : "";
+        if (institution) {
+          newEducation.push({ id: Date.now().toString() + Math.random(), institution, degree, field: "", startYear, endYear, gpa: "", description: "" });
+        }
+      }
+    }
+
+    // ── Apply everything
+    setFormData(p => ({
+      ...p,
+      name: name || p.name,
+      title: title || p.title,
+      email: email || p.email,
+      phone: phone || p.phone,
+      location: location || p.location,
+      linkedin: linkedin || p.linkedin,
+      website: website || p.website,
+      summary: summary || p.summary,
+      skills: skills.length > 0 ? skills : p.skills,
+      languages: langs.length > 0 ? langs : p.languages,
+    }));
+    if (newExperiences.length > 0) setExperience(newExperiences);
+    if (newEducation.length > 0) setEducation(newEducation);
+
+    // Enable imported sections
+    if (skills.length > 0) setSections(p => ({ ...p, skills: true }));
+    if (langs.length > 0) setSections(p => ({ ...p, languages: true }));
+    if (newExperiences.length > 0) setSections(p => ({ ...p, experience: true }));
+    if (newEducation.length > 0) setSections(p => ({ ...p, education: true }));
+    if (summary) setSections(p => ({ ...p, summary: true }));
+
+    setImportDone(true);
+    setTimeout(() => { setShowImport(false); setImportText(""); setImportDone(false); }, 1500);
+  };
 
   // ─── PDF Download ─────────────────────────────────────────────────────────
 
@@ -599,13 +742,22 @@ export default function CvGeneratorTool() {
               ))}
             </div>
           </div>
-          <button
-            onClick={() => setShowPreview(!showPreview)}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-[#0A66C2] font-semibold rounded-lg hover:bg-blue-50 text-sm"
-          >
-            <Eye className="w-4 h-4" />
-            {showPreview ? "Hide Preview" : "Live Preview"}
-          </button>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg text-sm border border-white/30"
+            >
+              <Upload className="w-4 h-4" />
+              Import from LinkedIn
+            </button>
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-[#0A66C2] font-semibold rounded-lg hover:bg-blue-50 text-sm"
+            >
+              <Eye className="w-4 h-4" />
+              {showPreview ? "Hide Preview" : "Live Preview"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -965,6 +1117,76 @@ export default function CvGeneratorTool() {
           </div>
           <div className="overflow-auto max-h-[600px] rounded-xl shadow-2xl">
             {renderCV()}
+          </div>
+        </div>
+      )}
+
+      {/* ── LinkedIn Import Modal ── */}
+      {showImport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <Linkedin className="w-5 h-5 text-[#0A66C2]" /> Import from LinkedIn
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">Paste your LinkedIn profile text to auto-fill your CV in seconds</p>
+              </div>
+              <button onClick={() => { setShowImport(false); setImportText(""); }} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {/* Step-by-step instructions */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="text-sm font-bold text-blue-900 mb-3 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4" /> How to get your LinkedIn profile text (30 seconds):
+                </p>
+                <ol className="space-y-2 text-sm text-blue-800">
+                  <li className="flex gap-2"><span className="font-bold shrink-0">1.</span> Open your LinkedIn profile: <a href="https://www.linkedin.com/in/me/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">linkedin.com/in/me</a></li>
+                  <li className="flex gap-2"><span className="font-bold shrink-0">2.</span> Press <kbd className="px-1.5 py-0.5 bg-blue-100 rounded text-xs font-mono">Ctrl+A</kbd> (Windows) or <kbd className="px-1.5 py-0.5 bg-blue-100 rounded text-xs font-mono">Cmd+A</kbd> (Mac) to select all text</li>
+                  <li className="flex gap-2"><span className="font-bold shrink-0">3.</span> Press <kbd className="px-1.5 py-0.5 bg-blue-100 rounded text-xs font-mono">Ctrl+C</kbd> to copy</li>
+                  <li className="flex gap-2"><span className="font-bold shrink-0">4.</span> Paste it in the box below and click <strong>Auto-Fill CV</strong></li>
+                </ol>
+                <p className="text-xs text-blue-600 mt-3">💡 Tip: The more sections visible on your profile, the better the auto-fill. Expand all sections before copying.</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">Paste your LinkedIn profile text here:</label>
+                <textarea
+                  value={importText}
+                  onChange={e => setImportText(e.target.value)}
+                  className="w-full h-48 px-4 py-3 border border-gray-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-[#0A66C2] focus:border-transparent font-mono"
+                  placeholder="Paste your LinkedIn profile text here...&#10;&#10;Your Name&#10;Senior Software Engineer at Google&#10;San Francisco, CA&#10;&#10;About&#10;Passionate software engineer with 8 years of experience...&#10;&#10;Experience&#10;Senior Software Engineer&#10;Google&#10;Jan 2020 – Present&#10;..."
+                />
+                <p className="text-xs text-gray-400 mt-1">{importText.length} characters pasted</p>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={parseLinkedInText}
+                  disabled={importText.trim().length < 50 || importDone}
+                  className="flex-1 py-3 bg-gradient-to-r from-[#0A66C2] to-[#057642] text-white rounded-xl font-bold text-sm hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {importDone ? (
+                    <><Check className="w-5 h-5" /> CV Auto-Filled Successfully!</>
+                  ) : (
+                    <><Sparkles className="w-5 h-5" /> Auto-Fill CV from LinkedIn Text</>
+                  )}
+                </button>
+                <button
+                  onClick={() => { setShowImport(false); setImportText(""); }}
+                  className="px-5 py-3 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-400 text-center">
+                🔒 Your data never leaves your browser — nothing is sent to any server. You can edit everything after import.
+              </p>
+            </div>
           </div>
         </div>
       )}
