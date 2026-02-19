@@ -2,9 +2,9 @@ import EndorsementTrackerTool from "@/components/tools/EndorsementTrackerTool";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "LinkedIn Endorsement Tracker | Track Your Endorsements",
-  description: "Track and manage your LinkedIn skill endorsements.",
-  keywords: "linkedin endorsement tracker, skills endorsement, linkedin tips",
+  title: "Free LinkedIn Endorsement Tracker | Manage Your Skills",
+  description: "Track and manage your LinkedIn skill endorsements. Identify which skills need more endorsements and prioritize what to showcase to recruiters. Free tool.",
+  keywords: "linkedin endorsement tracker, skills endorsement, linkedin skill management, linkedin profile tips",
 };
 
 export default function EndorsementTrackerPage() {

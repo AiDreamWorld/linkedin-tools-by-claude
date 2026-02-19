@@ -2,9 +2,9 @@ import SalaryResearchTool from "@/components/tools/SalaryResearchTool";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Free Salary Research Tool | Salary Calculator",
-  description: "Research salary ranges for different roles. Get salary data by role, experience, and location.",
-  keywords: "salary research tool, salary calculator, job salary data",
+  title: "Free Salary Research Tool | Know Your Market Value",
+  description: "Research salary ranges for any role, experience level, and location. Stop underselling yourself — know your market value before your next negotiation. Free, no sign-up.",
+  keywords: "salary research tool, salary calculator, job salary data, market salary, pay negotiation, salary by role",
 };
 
 export default function SalaryResearchPage() {

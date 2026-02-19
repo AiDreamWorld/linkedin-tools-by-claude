@@ -2,608 +2,422 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Zap, Shield, Clock, Sparkles, Star, Search, Heart } from "lucide-react";
+import {
+  ArrowRight, Zap, Shield, Clock, Sparkles, Star,
+  FileText, TrendingUp, Users, Award, CheckCircle,
+  ChevronRight, BarChart2, Briefcase, PenTool, Target
+} from "lucide-react";
 import RecentlyUsedTools from "@/components/RecentlyUsedTools";
 
-const tools = [
+const STATS = [
+  { value: "45+", label: "Free Tools", icon: <Sparkles className="w-5 h-5" /> },
+  { value: "100%", label: "Free Forever", icon: <Shield className="w-5 h-5" /> },
+  { value: "0", label: "Sign-ups Needed", icon: <Zap className="w-5 h-5" /> },
+  { value: "∞", label: "Uses Per Tool", icon: <Clock className="w-5 h-5" /> },
+];
+
+const FEATURED_TOOLS = [
   {
-    title: "Profile Analyzer",
-    description: "Analyze and score your LinkedIn profile with actionable tips",
-    href: "/tools/profile-analyzer",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#004182]",
-    stats: "Free",
-  },
-  {
-    title: "Headline Generator",
-    description: "Create attention-grabbing headlines that stand out",
-    href: "/tools/headline-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    ),
-    color: "from-[#057642] to-[#065f46]",
-    stats: "Free",
-  },
-  {
-    title: "About Writer",
-    description: "Generate a compelling About section that tells your professional story",
-    href: "/tools/about-writer",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-      </svg>
-    ),
-    color: "from-[#7c3aed] to-[#5b21b6]",
-    stats: "Free",
-  },
-  {
-    title: "Message Generator",
-    description: "Create personalized outreach messages for connections",
-    href: "/tools/message-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    ),
-    color: "from-[#ea580c] to-[#c2410c]",
-    stats: "Free",
-  },
-  {
-    title: "Job Tracker",
-    description: "Track and manage your job applications in one place",
-    href: "/tools/job-tracker",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "from-[#db2777] to-[#be185d]",
-    stats: "Free",
-  },
-  {
-    title: "CV Generator",
-    description: "Create professional CV/resume from your LinkedIn profile",
+    emoji: "📄",
+    name: "CV Generator",
+    desc: "8 premium templates, PDF export — free vs paid alternatives charging $30/month",
     href: "/tools/cv-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#057642]",
-    stats: "Free",
+    gradient: "from-[#0A66C2] to-[#7c3aed]",
+    badge: "Most Popular",
   },
   {
-    title: "Hashtag Generator",
-    description: "Generate relevant hashtags to boost your LinkedIn post reach",
-    href: "/tools/hashtag-generator",
-    icon: <span className="text-white font-bold text-xl">#</span>,
-    color: "from-[#057642] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Hook Generator",
-    description: "Create engaging opening hooks that stop the scroll",
-    href: "/tools/hook-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-    color: "from-[#ea580c] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Post Preview",
-    description: "Preview how your LinkedIn post will appear in the feed",
-    href: "/tools/post-preview",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-      </svg>
-    ),
-    color: "from-[#db2777] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Text Formatter",
-    description: "Format your LinkedIn text with bold, italic, strikethrough",
-    href: "/tools/text-formatter",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-      </svg>
-    ),
-    color: "from-[#7c3aed] to-[#db2777]",
-    stats: "Free",
-  },
-  {
-    title: "Post Generator",
-    description: "Generate engaging LinkedIn posts with AI-powered templates",
+    emoji: "✍️",
+    name: "Post Generator",
+    desc: "Generate viral LinkedIn posts with the right tone and structure",
     href: "/tools/post-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#db2777]",
-    stats: "Free",
+    gradient: "from-[#7c3aed] to-[#db2777]",
+    badge: "Trending",
   },
   {
-    title: "Banner Maker",
-    description: "Create professional LinkedIn banner images for your profile",
+    emoji: "🎯",
+    name: "Headline Generator",
+    desc: "Craft attention-grabbing headlines that get you noticed by recruiters",
+    href: "/tools/headline-generator",
+    gradient: "from-[#057642] to-[#0A66C2]",
+    badge: "High Impact",
+  },
+  {
+    emoji: "📊",
+    name: "Job Tracker",
+    desc: "Track applications, deadlines, and follow-ups — all in your browser",
+    href: "/tools/job-tracker",
+    gradient: "from-[#ea580c] to-[#db2777]",
+    badge: "Career Essential",
+  },
+  {
+    emoji: "🖼️",
+    name: "Banner Maker",
+    desc: "Create a stunning LinkedIn banner in minutes — downloads as real PNG",
     href: "/tools/banner-maker",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "from-[#7c3aed] to-[#0A66C2]",
-    stats: "Free",
+    gradient: "from-[#db2777] to-[#7c3aed]",
+    badge: "Visual",
   },
   {
-    title: "Character Counter",
-    description: "Check character count for LinkedIn posts, about, headline",
-    href: "/tools/character-counter",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Readability Checker",
-    description: "Check your LinkedIn post readability score",
-    href: "/tools/readability-checker",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    color: "from-[#db2777] to-[#0A66C2]",
-    stats: "Free",
-  },
-  {
-    title: "Headline Optimizer",
-    description: "Optimize your LinkedIn headline for better visibility",
-    href: "/tools/headline-optimizer",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-    color: "from-[#057642] to-[#0A66C2]",
-    stats: "Free",
-  },
-  {
-    title: "Summary Generator",
-    description: "Generate a compelling LinkedIn summary (About section)",
-    href: "/tools/summary-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
-      </svg>
-    ),
-    color: "from-[#7c3aed] to-[#db2777]",
-    stats: "Free",
-  },
-  {
-    title: "Post Writer (AI)",
-    description: "AI-powered LinkedIn post writer. Generate viral posts",
-    href: "/tools/post-writer",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-    ),
-    color: "from-[#db2777] to-[#ea580c]",
-    stats: "Free",
-  },
-  {
-    title: "Profile to PDF",
-    description: "Export your LinkedIn profile to a professional PDF",
-    href: "/tools/profile-to-pdf",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    color: "from-[#ea580c] to-[#0A66C2]",
-    stats: "Free",
-  },
-  {
-    title: "Skills Analyzer",
-    description: "Analyze your LinkedIn skills and get recommendations",
-    href: "/tools/skills-analyzer",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Cover Letter Generator",
-    description: "Generate a professional cover letter from your profile",
+    emoji: "💌",
+    name: "Cover Letter Generator",
+    desc: "Professional cover letters tailored to any job description",
     href: "/tools/cover-letter-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ),
-    color: "from-[#7c3aed] to-[#057642]",
-    stats: "Free",
+    gradient: "from-[#0A66C2] to-[#057642]",
+    badge: "Job Seeker",
+  },
+];
+
+const HOW_IT_WORKS = [
+  {
+    step: "01",
+    icon: <Target className="w-7 h-7" />,
+    title: "Pick Your Tool",
+    desc: "Browse 45+ free LinkedIn tools organized by category — profile, content, career, and outreach.",
+    color: "from-[#0A66C2] to-[#004182]",
   },
   {
-    title: "Endorsement Tracker",
-    description: "Track and manage your LinkedIn skill endorsements",
-    href: "/tools/endorsement-tracker",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-      </svg>
-    ),
-    color: "from-[#057642] to-[#db2777]",
-    stats: "Free",
+    step: "02",
+    icon: <PenTool className="w-7 h-7" />,
+    title: "Fill in Details",
+    desc: "Enter your information, role, or topic. No account, no login, no personal data stored on servers.",
+    color: "from-[#7c3aed] to-[#5b21b6]",
   },
   {
-    title: "Connection Request Generator",
-    description: "Create personalized connection request messages",
-    href: "/tools/connection-request-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#7c3aed]",
-    stats: "Free",
+    step: "03",
+    icon: <TrendingUp className="w-7 h-7" />,
+    title: "Get Results Instantly",
+    desc: "Generate professional-grade output in seconds. Copy, download, or export to PDF — all free.",
+    color: "from-[#057642] to-[#065f46]",
+  },
+];
+
+const CATEGORIES = [
+  { icon: <Users className="w-5 h-5" />, name: "Profile Optimization", count: 12, color: "bg-blue-50 text-blue-700 border-blue-200", href: "/tools" },
+  { icon: <PenTool className="w-5 h-5" />, name: "Content Creation", count: 11, color: "bg-purple-50 text-purple-700 border-purple-200", href: "/tools" },
+  { icon: <Briefcase className="w-5 h-5" />, name: "Career Tools", count: 8, color: "bg-green-50 text-green-700 border-green-200", href: "/tools" },
+  { icon: <BarChart2 className="w-5 h-5" />, name: "Analytics & Research", count: 7, color: "bg-orange-50 text-orange-700 border-orange-200", href: "/tools" },
+  { icon: <FileText className="w-5 h-5" />, name: "Outreach & Messages", count: 7, color: "bg-pink-50 text-pink-700 border-pink-200", href: "/tools" },
+];
+
+const TESTIMONIALS = [
+  {
+    name: "Sarah K.",
+    role: "Marketing Graduate",
+    avatar: "SK",
+    color: "bg-blue-500",
+    text: "The CV Generator saved me hours. I had a professional PDF in minutes — other services charge $30/month for the same thing!",
+    stars: 5,
   },
   {
-    title: "Interview Questions Generator",
-    description: "Generate practice interview questions for any role",
-    href: "/tools/interview-questions-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    ),
-    color: "from-[#7c3aed] to-[#db2777]",
-    stats: "Free",
+    name: "James M.",
+    role: "Software Engineer",
+    avatar: "JM",
+    color: "bg-purple-500",
+    text: "The Post Generator helped me grow from 200 to 2,000 followers. The templates are actually good, not generic garbage.",
+    stars: 5,
   },
   {
-    title: "Salary Research Tool",
-    description: "Research salary ranges for different roles and locations",
-    href: "/tools/salary-research",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    color: "from-[#057642] to-[#0A66C2]",
-    stats: "Free",
+    name: "Priya N.",
+    role: "MBA Student",
+    avatar: "PN",
+    color: "bg-green-500",
+    text: "I used the Headline Generator and Banner Maker for my job search. Got 3 recruiter messages in the first week!",
+    stars: 5,
   },
   {
-    title: "Company Research Tool",
-    description: "Get quick insights about companies you're interested in",
-    href: "/tools/company-research",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-    ),
-    color: "from-[#ea580c] to-[#db2777]",
-    stats: "Free",
+    name: "Alex T.",
+    role: "Freelance Designer",
+    avatar: "AT",
+    color: "bg-orange-500",
+    text: "The Banner Maker is incredible. Real PNG download, beautiful templates. Exactly what I needed for my profile.",
+    stars: 5,
   },
-  {
-    title: "Keyword Optimizer",
-    description: "Find keywords to optimize your LinkedIn profile",
-    href: "/tools/keyword-optimizer",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-      </svg>
-    ),
-    color: "from-[#db2777] to-[#ea580c]",
-    stats: "Free",
-  },
-  {
-    title: "InMail Generator",
-    description: "Create professional InMail messages",
-    href: "/tools/inmail-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Post Comment Generator",
-    description: "Generate engaging comments for LinkedIn posts",
-    href: "/tools/post-comment-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    ),
-    color: "from-[#057642] to-[#0A66C2]",
-    stats: "Free",
-  },
-  {
-    title: "Welcome Message",
-    description: "Create warm messages for new connections",
-    href: "/tools/welcome-message",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-      </svg>
-    ),
-    color: "from-[#ea580c] to-[#db2777]",
-    stats: "Free",
-  },
-  {
-    title: "Recommendation Request",
-    description: "Generate professional recommendation requests",
-    href: "/tools/recommendation-request",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-      </svg>
-    ),
-    color: "from-[#7c3aed] to-[#db2777]",
-    stats: "Free",
-  },
-  {
-    title: "Content Calendar",
-    description: "Plan your LinkedIn content strategy",
-    href: "/tools/content-calendar",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "from-[#db2777] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Poll Questions Generator",
-    description: "Create engaging poll questions",
-    href: "/tools/poll-questions-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-      </svg>
-    ),
-    color: "from-[#0A66C2] to-[#057642]",
-    stats: "Free",
-  },
-  {
-    title: "CTA Generator",
-    description: "Generate compelling call-to-action phrases",
-    href: "/tools/cta-generator",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
-      </svg>
-    ),
-    color: "from-[#ea580c] to-[#db2777]",
-    stats: "Free",
-  },
-  {
-    title: "Banner Ideas",
-    description: "Get creative banner design ideas",
-    href: "/tools/banner-ideas",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "from-[#db2777] to-[#7c3aed]",
-    stats: "Free",
-  },
-  {
-    title: "Custom URL Optimizer",
-    description: "Optimize your LinkedIn profile URL",
-    href: "/tools/custom-url-optimizer",
-    icon: (
-      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-      </svg>
-    ),
-    color: "from-[#057642] to-[#0A66C2]",
-    stats: "Free",
-  },
+];
+
+const COMPARISON = [
+  { feature: "Professional CV Templates", linkforge: true, competitor: false },
+  { feature: "LinkedIn Post Generator", linkforge: true, competitor: true },
+  { feature: "PDF Export", linkforge: true, competitor: false },
+  { feature: "Completely Free", linkforge: true, competitor: false },
+  { feature: "No Account Required", linkforge: true, competitor: false },
+  { feature: "Banner Maker (Real PNG)", linkforge: true, competitor: false },
+  { feature: "Job Application Tracker", linkforge: true, competitor: false },
+  { feature: "45+ Tools in One Place", linkforge: true, competitor: false },
 ];
 
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-gradient-to-br from-[#0A66C2] via-[#7c3aed] to-[#0A66C2]">
-        {/* Animated Background Shapes */}
-        <div className="absolute inset-0 overflow-hidden">
+
+      {/* ── Hero ── */}
+      <section className="relative min-h-[92vh] flex items-center overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #0A66C2 0%, #5b21b6 50%, #0A66C2 100%)" }}>
+
+        {/* Animated blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400/30 rounded-full blur-3xl"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.3, 0.5, 0.3],
-            }}
-            transition={{ duration: 5, repeat: Infinity }}
+            className="absolute -top-32 -right-32 w-96 h-96 rounded-full blur-3xl"
+            style={{ background: "rgba(139,92,246,0.35)" }}
+            animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.55, 0.3] }}
+            transition={{ duration: 6, repeat: Infinity }}
           />
           <motion.div
-            className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-400/30 rounded-full blur-3xl"
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{ duration: 7, repeat: Infinity }}
+            className="absolute -bottom-32 -left-32 w-[28rem] h-[28rem] rounded-full blur-3xl"
+            style={{ background: "rgba(59,130,246,0.3)" }}
+            animate={{ scale: [1, 1.3, 1], opacity: [0.25, 0.5, 0.25] }}
+            transition={{ duration: 8, repeat: Infinity }}
           />
           <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-400/20 rounded-full blur-3xl"
-            animate={{
-              scale: [1, 1.1, 1],
-              rotate: [0, 180, 360],
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-3xl"
+            style={{ background: "rgba(167,139,250,0.15)" }}
+            animate={{ scale: [1, 1.1, 1], rotate: [0, 180, 360] }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
           />
+          {/* Grid pattern overlay */}
+          <div className="absolute inset-0 opacity-10"
+            style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
         </div>
 
-        {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
+
             {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <span className="inline-flex items-center gap-2 px-6 py-3 bg-green-500/90 backdrop-blur-sm rounded-full text-white text-sm font-bold mb-8 shadow-lg">
-                <Heart className="w-4 h-4" />
-                45 Free Tools for Students
-                <span className="opacity-75">•</span>
-                No Credit Card Required
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-bold mb-8 shadow-lg border border-white/20"
+                style={{ background: "rgba(5,118,66,0.85)", backdropFilter: "blur(10px)" }}>
+                <Sparkles className="w-4 h-4 text-yellow-300" />
+                45+ Free LinkedIn Tools — No Sign-up Required
               </span>
             </motion.div>
 
-            {/* Main Heading */}
+            {/* Heading */}
             <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white mb-6 leading-tight"
+              className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white mb-6 leading-[1.08] tracking-tight"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              LinkedIn Tools for
+              Supercharge Your
               <br />
-              <span className="bg-gradient-to-r from-yellow-200 via-pink-200 to-cyan-200 bg-clip-text text-transparent">
-                Students & Professionals
+              <span className="bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(90deg, #fde68a, #f9a8d4, #a5f3fc)" }}>
+                LinkedIn Profile
               </span>
+              <br />
+              <span className="text-4xl sm:text-5xl font-bold text-white/90">for Free. Forever.</span>
             </motion.h1>
 
             {/* Subtitle */}
             <motion.p
-              className="text-lg sm:text-xl text-blue-100 max-w-3xl mx-auto mb-10"
+              className="text-xl text-blue-100 max-w-2xl mx-auto mb-10 leading-relaxed"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              Build your professional brand with <strong>36 free tools</strong> designed to help students 
-              optimize their LinkedIn profiles, generate professional content, and land their dream jobs.
+              Generate CVs, posts, headlines, banners, cover letters and more.
+              While others charge <s className="text-red-300">$29/month</s>, we give you everything — <strong className="text-white">100% free</strong>.
             </motion.p>
 
             {/* CTA Buttons */}
             <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12"
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <Link href="/tools">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+                  whileTap={{ scale: 0.96 }}
                   className="px-8 py-4 bg-white text-[#0A66C2] rounded-xl font-bold text-lg shadow-2xl flex items-center gap-2"
                 >
-                  Start Using Tools - It's Free
+                  Explore All 45 Tools
                   <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </Link>
+              <Link href="/tools/cv-generator">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="px-8 py-4 rounded-xl font-bold text-lg text-white flex items-center gap-2 border-2 border-white/40"
+                  style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}
+                >
+                  Build My CV Free
+                  <FileText className="w-5 h-5" />
                 </motion.button>
               </Link>
             </motion.div>
 
-            {/* Trust Indicators */}
+            {/* Trust badges */}
             <motion.div
-              className="flex flex-wrap items-center justify-center gap-6 text-white/90"
+              className="flex flex-wrap items-center justify-center gap-6 text-white/85"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-yellow-300" />
-                <span className="text-sm font-medium">No Registration Required</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-green-300" />
-                <span className="text-sm font-medium">100% Free Forever</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-cyan-300" />
-                <span className="text-sm font-medium">Instant Results</span>
-              </div>
+              {[
+                { icon: <Zap className="w-4 h-4 text-yellow-300" />, text: "Instant Results" },
+                { icon: <Shield className="w-4 h-4 text-green-300" />, text: "No Data Collected" },
+                { icon: <Clock className="w-4 h-4 text-cyan-300" />, text: "No Registration" },
+                { icon: <Award className="w-4 h-4 text-pink-300" />, text: "Professional Quality" },
+              ].map((b) => (
+                <div key={b.text} className="flex items-center gap-2">
+                  {b.icon}
+                  <span className="text-sm font-medium">{b.text}</span>
+                </div>
+              ))}
             </motion.div>
           </div>
+
+          {/* Stats Row */}
+          <motion.div
+            className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+          >
+            {STATS.map((s) => (
+              <div key={s.label}
+                className="rounded-2xl p-5 text-center border border-white/20"
+                style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}
+              >
+                <div className="flex justify-center mb-2 text-yellow-300">{s.icon}</div>
+                <div className="text-3xl font-extrabold text-white">{s.value}</div>
+                <div className="text-blue-200 text-sm mt-1">{s.label}</div>
+              </div>
+            ))}
+          </motion.div>
         </div>
 
-        {/* Wave Divider */}
+        {/* Wave */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg
-            viewBox="0 0 1440 120"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-auto"
-          >
-            <path
-              d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-              className="fill-white"
-            />
+          <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+            <path d="M0 100L60 92C120 84 240 68 360 60C480 52 600 52 720 56C840 60 960 68 1080 72C1200 76 1320 76 1380 76L1440 76V100H0Z"
+              fill="var(--background, #f8fafc)" />
           </svg>
         </div>
       </section>
 
+      {/* ── Recently Used ── */}
       <RecentlyUsedTools />
 
-      {/* Tools Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
+      {/* ── How It Works ── */}
+      <section className="py-20 bg-[var(--background,#f8fafc)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <span className="inline-block px-4 py-1.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full mb-4 uppercase tracking-wide">
+              How It Works
+            </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Free LinkedIn Tools
+              Professional results in 3 steps
             </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Everything you need to optimize your LinkedIn profile and accelerate your career.
+            <p className="text-gray-600 text-lg max-w-xl mx-auto">
+              No sign-up, no paywall, no nonsense. Just pick a tool and get results.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tools.map((tool, index) => (
-              <motion.div
-                key={tool.title}
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connector line */}
+            <div className="hidden md:block absolute top-10 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-[#0A66C2] via-[#7c3aed] to-[#057642] opacity-30" />
+            {HOW_IT_WORKS.map((step, i) => (
+              <motion.div key={step.step}
+                className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center relative"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+              >
+                <div className={`w-16 h-16 bg-gradient-to-br ${step.color} rounded-2xl flex items-center justify-center text-white mx-auto mb-5 shadow-lg`}>
+                  {step.icon}
+                </div>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{step.step}</span>
+                <h3 className="text-xl font-bold text-gray-900 mt-1 mb-3">{step.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Featured Tools ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <span className="inline-block px-4 py-1.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full mb-4 uppercase tracking-wide">
+              Most-Used Tools
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Everything You Need to Succeed on LinkedIn
+            </h2>
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              From your first profile to landing your dream job — we have a free tool for every step.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURED_TOOLS.map((tool, i) => (
+              <motion.div key={tool.name}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: i * 0.08 }}
               >
-                <Link 
-                  href={tool.href}
-                  className="group block bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 hover:shadow-xl transition-all duration-300"
+                <Link href={tool.href}
+                  className="group block bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl hover:border-[#0A66C2]/30 transition-all duration-300"
                 >
-                  <div className={`w-14 h-14 bg-gradient-to-br ${tool.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    {tool.icon}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-14 h-14 bg-gradient-to-br ${tool.gradient} rounded-xl flex items-center justify-center text-2xl shadow-md group-hover:scale-110 transition-transform`}>
+                      {tool.emoji}
+                    </div>
+                    <span className="text-xs font-bold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full">{tool.badge}</span>
                   </div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-bold text-gray-900">{tool.title}</h3>
-                    <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{tool.stats}</span>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{tool.name}</h3>
+                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">{tool.desc}</p>
+                  <div className="flex items-center text-[#0A66C2] font-semibold text-sm gap-1 group-hover:gap-2 transition-all">
+                    Use for free <ChevronRight className="w-4 h-4" />
                   </div>
-                  <p className="text-gray-600 text-sm mb-4">{tool.description}</p>
-                  <div className="flex items-center text-[#0A66C2] font-medium text-sm group-hover:gap-2 transition-all">
-                    Use Tool 
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <Link href="/tools">
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-8 py-3.5 rounded-xl font-bold text-white text-base shadow-lg flex items-center gap-2 mx-auto"
+                style={{ background: "linear-gradient(135deg, #0A66C2, #7c3aed)" }}
+              >
+                View All 45+ Tools
+                <ArrowRight className="w-5 h-5" />
+              </motion.button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Tool Categories ── */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <motion.div className="text-center mb-10" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Tools by Category</h2>
+            <p className="text-gray-600">Find exactly what you need, organized by purpose</p>
+          </motion.div>
+          <div className="flex flex-wrap gap-3 justify-center">
+            {CATEGORIES.map((cat, i) => (
+              <motion.div key={cat.name}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+              >
+                <Link href={cat.href}
+                  className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border font-semibold text-sm hover:shadow-md transition-all ${cat.color}`}
+                >
+                  {cat.icon}
+                  {cat.name}
+                  <span className="text-xs opacity-70">({cat.count})</span>
                 </Link>
               </motion.div>
             ))}
@@ -611,95 +425,170 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
-              Why Use Our Free LinkedIn Tools?
+      {/* ── Testimonials ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-14" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <span className="inline-block px-4 py-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full mb-4 uppercase tracking-wide">
+              Real Users
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Professionals Love LinkForge
             </h2>
-            <p className="text-gray-600 mb-8">
-              Everything is 100% free for students. No hidden fees, no credit card required, no premium version.
-            </p>
+            <div className="flex items-center justify-center gap-1 mb-2">
+              {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
+              <span className="ml-2 text-gray-600 font-medium">4.9 / 5</span>
+            </div>
           </motion.div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: "⚡", title: "Save Time", desc: "Generate professional content in seconds" },
-              { icon: "🎯", title: "Professional", desc: "Create content that stands out" },
-              { icon: "💎", title: "100% Free", desc: "No signup required, forever" },
-            ].map((item, index) => (
-              <motion.div
-                key={item.title}
-                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div key={t.name}
+                className="bg-gray-50 rounded-2xl p-6 border border-gray-100"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: i * 0.1 }}
               >
-                <div className="text-4xl mb-3">{item.icon}</div>
-                <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
-                <p className="text-sm text-gray-600">{item.desc}</p>
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(t.stars)].map((_, j) => <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                </div>
+                <p className="text-gray-700 text-sm leading-relaxed mb-5">"{t.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 ${t.color} rounded-full flex items-center justify-center text-white text-xs font-bold`}>
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">{t.name}</p>
+                    <p className="text-gray-500 text-xs">{t.role}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#0A66C2] via-[#7c3aed] to-[#0A66C2] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-white rounded-full blur-3xl" />
-        </div>
-        
-        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+      {/* ── Comparison Table ── */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <span className="inline-block px-4 py-1.5 bg-green-100 text-green-700 text-xs font-bold rounded-full mb-4 uppercase tracking-wide">
+              Why LinkForge
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              Free vs Paid Competitors
+            </h2>
+            <p className="text-gray-600">We give you premium features at $0</p>
+          </motion.div>
           <motion.div
+            className="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-white mb-6">
-              Ready to Level Up Your LinkedIn?
-            </h2>
-            <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-              All 21 tools are 100% free for students. No signup, no credit card, no premium version.
-            </p>
-            <Link href="/tools">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="inline-block px-8 py-4 bg-white text-[#0A66C2] rounded-xl font-bold text-lg shadow-2xl"
+            <div className="grid grid-cols-3 bg-gray-50 border-b border-gray-200 text-sm font-bold">
+              <div className="p-4 text-gray-600">Feature</div>
+              <div className="p-4 text-center text-[#0A66C2]">LinkForge ✓</div>
+              <div className="p-4 text-center text-gray-500">Paid Tools</div>
+            </div>
+            {COMPARISON.map((row, i) => (
+              <div key={row.feature}
+                className={`grid grid-cols-3 border-b border-gray-100 last:border-0 text-sm ${i % 2 === 1 ? "bg-gray-50/50" : "bg-white"}`}
               >
-                Start Using Free Tools
-              </motion.button>
-            </Link>
+                <div className="p-4 text-gray-700 font-medium">{row.feature}</div>
+                <div className="p-4 flex justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 fill-green-100" />
+                </div>
+                <div className="p-4 flex justify-center">
+                  {row.competitor
+                    ? <CheckCircle className="w-5 h-5 text-gray-400" />
+                    : <span className="text-red-400 font-bold text-lg leading-none">✕</span>
+                  }
+                </div>
+              </div>
+            ))}
+          </motion.div>
+          <p className="text-center text-gray-500 text-xs mt-4">
+            * Competitor tools typically charge $15–$49/month for premium features
+          </p>
+        </div>
+      </section>
+
+      {/* ── Why Us ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <motion.div className="text-center mb-12" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Why We're Different
+            </h2>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { icon: "🔐", title: "Privacy First", desc: "All tools run in your browser. Nothing is sent to our servers. Your data stays yours." },
+              { icon: "⚡", title: "Instant Results", desc: "No waiting, no queue. Get professional output in under 5 seconds." },
+              { icon: "💎", title: "Premium Quality", desc: "Templates and outputs that rival $50/month professional services." },
+              { icon: "🎯", title: "LinkedIn-Specific", desc: "Every tool is built specifically for LinkedIn — optimized for the platform's limits and best practices." },
+              { icon: "📱", title: "Works Everywhere", desc: "Mobile, tablet, desktop. No app download needed." },
+              { icon: "🆓", title: "Always Free", desc: "No freemium trap. Every feature, every tool, every template — permanently free." },
+            ].map((item, i) => (
+              <motion.div key={item.title}
+                className="bg-gray-50 rounded-2xl p-6 border border-gray-100"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.07 }}
+              >
+                <div className="text-4xl mb-3">{item.icon}</div>
+                <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Final CTA ── */}
+      <section className="py-24 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0A66C2 0%, #5b21b6 50%, #0A66C2 100%)" }}>
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-white rounded-full blur-3xl" />
+        </div>
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <div className="text-5xl mb-6">🚀</div>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
+              Start Winning on LinkedIn Today
+            </h2>
+            <p className="text-blue-100 text-xl mb-10 max-w-2xl mx-auto">
+              Join thousands of professionals using LinkForge to build their brand, land jobs, and grow their networks — <strong className="text-white">completely free</strong>.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/tools">
+                <motion.button
+                  whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
+                  whileTap={{ scale: 0.97 }}
+                  className="px-10 py-4 bg-white text-[#0A66C2] rounded-xl font-bold text-lg shadow-2xl flex items-center gap-2"
+                >
+                  Get Started — It's Free
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </Link>
+              <Link href="/tools/cv-generator">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="px-10 py-4 rounded-xl font-bold text-lg text-white flex items-center gap-2 border-2 border-white/40"
+                  style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)" }}
+                >
+                  Build My CV Now
+                  <FileText className="w-5 h-5" />
+                </motion.button>
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#0A66C2] to-[#7c3aed] rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-white">LinkForge</span>
-              <span className="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-bold rounded-full">100% FREE</span>
-            </div>
-            <p className="text-gray-400 text-sm">
-              © 2026 LinkForge. Built for students, by students. All tools are free forever.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

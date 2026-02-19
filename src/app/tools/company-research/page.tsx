@@ -2,9 +2,9 @@ import CompanyResearchTool from "@/components/tools/CompanyResearchTool";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Free Company Research Tool | Company Insights",
-  description: "Research companies you're interested in. Get insights on culture, perks, and size.",
-  keywords: "company research tool, company insights, company culture",
+  title: "Free Company Research Tool | Before Your Next Interview",
+  description: "Instantly research any company — culture, size, growth, and interview tips. Prepare smarter for interviews and job applications. Free, no sign-up required.",
+  keywords: "company research tool, company insights, interview preparation, company culture, company background check",
 };
 
 export default function CompanyResearchPage() {
