@@ -213,6 +213,85 @@ body {
   background: rgba(255, 255, 255, 0.9);
 }
 
+/* ── Dark Mode ── */
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --input-bg: #1e293b;
+  --input-border: #475569;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+}
+
+.dark body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.dark .glass-effect {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+.dark .tool-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .tool-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.dark .tool-section {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.dark .tool-input,
+.dark .tool-textarea {
+  background: #0f172a;
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+.dark .tool-input::placeholder,
+.dark .tool-textarea::placeholder {
+  color: #64748b;
+}
+
+.dark .tool-button-secondary {
+  background: #1e293b;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+
+/* Dark mode for Tailwind bg-white, bg-gray-*, text-gray-* utility overrides */
+.dark .bg-white { background-color: #1e293b !important; }
+.dark .bg-gray-50 { background-color: #1e293b !important; }
+.dark .bg-gray-100 { background-color: #0f172a !important; }
+.dark .bg-gray-200 { background-color: #1e293b !important; }
+.dark .text-gray-900 { color: #f1f5f9 !important; }
+.dark .text-gray-800 { color: #e2e8f0 !important; }
+.dark .text-gray-700 { color: #cbd5e1 !important; }
+.dark .text-gray-600 { color: #94a3b8 !important; }
+.dark .text-gray-500 { color: #64748b !important; }
+.dark .border-gray-200 { border-color: #334155 !important; }
+.dark .border-gray-100 { border-color: #1e293b !important; }
+.dark .hover\:bg-gray-100:hover { background-color: #1e293b !important; }
+.dark .hover\:bg-gray-50:hover { background-color: #1e293b !important; }
+.dark input, .dark textarea, .dark select {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #64748b;
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
